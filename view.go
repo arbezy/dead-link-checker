@@ -26,11 +26,14 @@ func (m model) View() string {
 
 	if m.state == crawlingView {
 		s += "Crawling...\n\n"
+		s += m.progress.ViewAs(m.percent)
+		s += "\n\n"
 		s += faint.Render("(q)uit")
 	}
 
 	if m.state == resultsView {
 		s += "Crawl Results:\n\n"
+		s += faint.Render("(q)uit")
 	}
 
 	return s

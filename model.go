@@ -49,7 +49,7 @@ func NewModel() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return nil
+	return nil 
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -75,6 +75,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 				// move to crawl
 				m.state = crawlingView
+				m.percent = 0.0
+				return m, tickCmd()
 			case "b":
 				m.state = frontView
 			}
@@ -95,6 +97,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if m.listIndex > 0 {
 					m.listIndex--
 				}
+			case "q":
+				return m, tea.Quit
 			}
 		}
 
