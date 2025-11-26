@@ -9,6 +9,8 @@ import (
 	tea  "github.com/charmbracelet/bubbletea"
 )
 
+// TODO: Fix bug with progress bar that causes it to jump in greater increments than 10 after leaving then returning to crawling page
+
 const (
 	frontView uint = iota
 	loginView
@@ -57,50 +59,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		// TODO: move all of these key messages into a seperate function called m.handleKeyInput(msg)
 		key := msg.String()
-
-		switch m.state {
-		case frontView:
-			switch key {
-			case "q":
-				return m, tea.Quit
-			case "l":
-				m.state = loginView
-			}
-		case loginView:
-			switch key {
-			case "enter":
-				// ask to confirm
-
-				// move to crawl
-				m.state = crawlingView
-				m.percent = 0.0
-				return m, tickCmd()
-			case "b":
-				m.state = frontView
-			}
-		case crawlingView:
-			// wait until crawl is done or quit early
-			switch key {
-			case "q":
-				// quit early
-				m.state = loginView
-			}
-		case resultsView:
-			switch key {
-			case "j":
-				if m.listIndex < len(m.results) { 
-					m.listIndex++
-				}
-			case "k":
-				if m.listIndex > 0 {
-					m.listIndex--
-				}
-			case "q":
-				return m, tea.Quit
-			}
-		}
+		return m.handleKeyInput(key)
 
 	case tickMsg:
 		m.percent += 0.1
@@ -111,6 +71,51 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tickCmd()
 	}
 	
+	return m, nil
+}
+
+func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
+	switch m.state {
+	case frontView:
+		switch key {
+		case "q":
+			return m, tea.Quit
+		case "l":
+			m.state = loginView
+		}
+	case loginView:
+		switch key {
+		case "enter":
+			// ask to confirm
+
+			// move to crawl
+			m.percent = 0.0
+			m.state = crawlingView
+			return m, tickCmd()
+		case "b":
+			m.state = frontView
+		}
+	case crawlingView:
+		// wait until crawl is done or quit early
+		switch key {
+		case "q":
+			// quit early
+			m.state = loginView
+		}
+	case resultsView:
+		switch key {
+		case "j":
+			if m.listIndex < len(m.results) { 
+				m.listIndex++
+			}
+		case "k":
+			if m.listIndex > 0 {
+				m.listIndex--
+			}
+		case "q":
+			return m, tea.Quit
+		}
+	}
 	return m, nil
 }
 
