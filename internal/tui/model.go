@@ -11,6 +11,8 @@ import (
 )
 
 // TODO: Fix bug with progress bar that causes it to jump in greater increments than 10 after leaving then returning to crawling page
+// this might just get fixed by having it track real crawling progress rather than a 10 second timer
+// TODO: might be a good idea to seperate model per 'state' or at least create a seperate state for the crawling state
 
 const (
 	frontView uint = iota
@@ -21,21 +23,15 @@ const (
 
 type tickMsg time.Time
 
-// TODO: Need to make status a bit slicker, i.e. using an enum or something...
-type Result struct {
-	shortname string
-	status    string
-}
-
 type model struct {
 	state uint
 	// table     table.Model
 	textinput textinput.Model
 	urllist   []string
-	results   []Result
-	listIndex int
-	progress  progress.Model
-	percent   float64
+	// listIndex int
+	progress progress.Model
+	percent  float64
+	result   []crawling.CheckedLink
 }
 
 func NewModel() model {
@@ -71,8 +67,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tickCmd()
 	}
-
 	return m, nil
+}
+
+// TODO: change this to follow progress of crawl rather than just wait a second
+func tickCmd() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
 }
 
 func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
@@ -92,6 +94,7 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 			// move to crawl
 			m.percent = 0.0
 			m.state = crawlingView
+			m.result = crawling.CheckLinks(m.urllist)
 			return m, tickCmd()
 		case "b":
 			m.state = frontView
@@ -105,23 +108,17 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 		}
 	case resultsView:
 		switch key {
-		case "j":
-			if m.listIndex < len(m.results) {
-				m.listIndex++
-			}
-		case "k":
-			if m.listIndex > 0 {
-				m.listIndex--
-			}
+		//		case "j":
+		//			if m.listIndex < len(m.results) {
+		//				m.listIndex++
+		//			}
+		//		case "k":
+		//			if m.listIndex > 0 {
+		//				m.listIndex--
+		//			}
 		case "q":
 			return m, tea.Quit
 		}
 	}
 	return m, nil
-}
-
-func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
 }

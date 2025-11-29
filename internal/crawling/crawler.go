@@ -5,25 +5,25 @@ import (
 	"net/http"
 )
 
-type checkedLink struct {
+type CheckedLink struct {
 	url       string
 	status    string
 	timeTaken uint
 }
 
-func check_link(url string) (checkedLink, error) {
+func checkLink(url string) (CheckedLink, error) {
 	response, err := http.Get(url)
 	if err != nil {
 		log.Fatalf("Failed to get %s", url)
-		return checkedLink{}, err
+		return CheckedLink{}, err
 	}
-	return checkedLink{url, response.Status, 0.0}, nil
+	return CheckedLink{url, response.Status, 0.0}, nil
 }
 
-func check_links(urls []string) []checkedLink {
-	results := []checkedLink{}
+func CheckLinks(urls []string) []CheckedLink {
+	results := []CheckedLink{}
 	for _, url := range urls {
-		result, err := check_link(url)
+		result, err := checkLink(url)
 		if err == nil {
 			results = append(results, result)
 		}
