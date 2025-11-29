@@ -1,12 +1,13 @@
-package main
+package tui
 
 import (
 	"log"
 	"time"
 
-	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/arbezy/dead-link-checker/internal/crawling"
 	"github.com/charmbracelet/bubbles/progress"
-	tea  "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 // TODO: Fix bug with progress bar that causes it to jump in greater increments than 10 after leaving then returning to crawling page
@@ -23,11 +24,11 @@ type tickMsg time.Time
 // TODO: Need to make status a bit slicker, i.e. using an enum or something...
 type Result struct {
 	shortname string
-	status string 
+	status    string
 }
 
 type model struct {
-	state	  uint
+	state uint
 	// table     table.Model
 	textinput textinput.Model
 	urllist   []string
@@ -38,11 +39,11 @@ type model struct {
 }
 
 func NewModel() model {
-	urllist, err := GetUrls()
+	urllist, err := crawling.GetUrls()
 	if err != nil {
 		log.Fatal("Failure gettings urls")
 	}
-	return model {
+	return model{
 		state:     frontView,
 		textinput: textinput.New(),
 		urllist:   urllist,
@@ -51,7 +52,7 @@ func NewModel() model {
 }
 
 func (m model) Init() tea.Cmd {
-	return nil 
+	return nil
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -70,7 +71,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tickCmd()
 	}
-	
+
 	return m, nil
 }
 
@@ -105,7 +106,7 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 	case resultsView:
 		switch key {
 		case "j":
-			if m.listIndex < len(m.results) { 
+			if m.listIndex < len(m.results) {
 				m.listIndex++
 			}
 		case "k":

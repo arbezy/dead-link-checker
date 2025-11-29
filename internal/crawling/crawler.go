@@ -1,4 +1,4 @@
-package main
+package crawling
 
 import (
 	"log"
@@ -30,9 +30,3 @@ func check_links(urls []string) []checkedLink {
 	}
 	return results
 }
-
-// func get_urls() []string {
-// 	urls := []string{}
-// 	urls = append(urls, "https://google.com")
-// 	return urls
-// }

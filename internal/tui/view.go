@@ -1,4 +1,4 @@
-package main
+package tui
 
 import (
 	"github.com/charmbracelet/lipgloss"
@@ -6,13 +6,13 @@ import (
 
 var (
 	appNameStyle = lipgloss.NewStyle().Background(lipgloss.Color("99")).Padding(0, 1)
-	faint = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
+	faint        = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
 	//listEnumeratorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).MarginRight(1)
 )
 
 func (m model) View() string {
 	s := appNameStyle.Render("URL LINK CHECKER")
-	s += "\n"	
+	s += "\n"
 
 	if m.state == frontView {
 		s += "Welcome!\n\n"

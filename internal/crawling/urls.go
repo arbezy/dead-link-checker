@@ -1,7 +1,7 @@
-package main
+package crawling
 
 import (
-	//"log"
+// "log"
 )
 
 func GetUrls() ([]string, error) {
