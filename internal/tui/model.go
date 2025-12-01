@@ -2,17 +2,12 @@ package tui
 
 import (
 	"log"
-	"time"
 
 	"github.com/arbezy/dead-link-checker/internal/crawling"
 	"github.com/charmbracelet/bubbles/progress"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
-
-// TODO: Fix bug with progress bar that causes it to jump in greater increments than 10 after leaving then returning to crawling page
-// this might just get fixed by having it track real crawling progress rather than a 10 second timer
-// TODO: might be a good idea to seperate model per 'state' or at least create a seperate state for the crawling state
 
 const (
 	frontView uint = iota
@@ -21,9 +16,9 @@ const (
 	resultsView
 )
 
-type tickMsg time.Time
-
 type crawlResultMsg []crawling.CheckedLink
+
+type updateProgressBarMsg int
 
 type model struct {
 	state uint
@@ -63,6 +58,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case crawlResultMsg:
 		m.result = msg
+
+	case updateProgressBarMsg:
+		// while not all links crawled, keep updating progress bar
+		if crawling.LinksCrawled < len(m.urllist) {
+			m.percent = float64(crawling.LinksCrawled) / float64(len(m.urllist))
+			return m, updateProgressBar
+		}
+		// crawl finished, move onto results
 		m.state = resultsView
 
 	}
@@ -74,6 +77,10 @@ func startCrawl(urls []string) tea.Cmd {
 		res := crawling.CheckLinks(urls)
 		return crawlResultMsg(res)
 	}
+}
+
+func updateProgressBar() tea.Msg {
+	return updateProgressBarMsg(0)
 }
 
 func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
@@ -92,7 +99,7 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 
 			// move to crawl
 			m.state = crawlingView
-			return m, startCrawl(m.urllist)
+			return m, tea.Batch(startCrawl(m.urllist), updateProgressBar)
 		case "b":
 			m.state = frontView
 		}

@@ -5,15 +5,14 @@ import (
 )
 
 var (
-	appNameStyle = lipgloss.NewStyle().Background(lipgloss.Color("99")).Padding(0, 1)
-	faint        = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
-	//listEnumeratorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).MarginRight(1)
+	appNameStyle    = lipgloss.NewStyle().Background(lipgloss.Color("99")).Padding(0, 1)
+	faint           = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
 	goodStatusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
 	badStatusStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Bold(true)
 )
 
 func (m model) View() string {
-	s := appNameStyle.Render("URL LINK CHECKER")
+	s := appNameStyle.Render("DEAD LINK CHECKER")
 	s += "\n"
 
 	if m.state == frontView {

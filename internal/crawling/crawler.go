@@ -11,6 +11,8 @@ type CheckedLink struct {
 	TimeTaken uint
 }
 
+var LinksCrawled int = 0
+
 func checkLink(url string) (CheckedLink, error) {
 	response, err := http.Get(url)
 	if err != nil {
@@ -27,6 +29,7 @@ func CheckLinks(urls []string) []CheckedLink {
 		if err == nil {
 			results = append(results, result)
 		}
+		LinksCrawled++
 	}
 	return results
 }
