@@ -23,6 +23,8 @@ const (
 
 type tickMsg time.Time
 
+type crawlResultMsg []crawling.CheckedLink
+
 type model struct {
 	state uint
 	// table     table.Model
@@ -59,22 +61,19 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		key := msg.String()
 		return m.handleKeyInput(key)
 
-	case tickMsg:
-		m.percent += 0.1
-		if m.percent > 1.0 {
-			m.percent = 1.0
-			m.state = resultsView
-		}
-		return m, tickCmd()
+	case crawlResultMsg:
+		m.result = msg
+		m.state = resultsView
+
 	}
 	return m, nil
 }
 
-// TODO: change this to follow progress of crawl rather than just wait a second
-func tickCmd() tea.Cmd {
-	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
+func startCrawl(urls []string) tea.Cmd {
+	return func() tea.Msg {
+		res := crawling.CheckLinks(urls)
+		return crawlResultMsg(res)
+	}
 }
 
 func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
@@ -92,10 +91,8 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 			// ask to confirm
 
 			// move to crawl
-			m.percent = 0.0
 			m.state = crawlingView
-			m.result = crawling.CheckLinks(m.urllist)
-			return m, tickCmd()
+			return m, startCrawl(m.urllist)
 		case "b":
 			m.state = frontView
 		}

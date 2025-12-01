@@ -6,9 +6,9 @@ import (
 )
 
 type CheckedLink struct {
-	url       string
-	status    string
-	timeTaken uint
+	Url       string
+	Status    string
+	TimeTaken uint
 }
 
 func checkLink(url string) (CheckedLink, error) {

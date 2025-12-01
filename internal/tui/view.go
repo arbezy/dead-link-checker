@@ -33,6 +33,9 @@ func (m model) View() string {
 
 	if m.state == resultsView {
 		s += "Crawl Results:\n\n"
+		for _, n := range m.result {
+			s += n.Url + " | " + n.Status + "\n"
+		}
 		s += faint.Render("(q)uit")
 	}
 
