@@ -8,6 +8,8 @@ var (
 	appNameStyle = lipgloss.NewStyle().Background(lipgloss.Color("99")).Padding(0, 1)
 	faint        = lipgloss.NewStyle().Foreground(lipgloss.Color("255")).Faint(true)
 	//listEnumeratorStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("99")).MarginRight(1)
+	goodStatusStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("2")).Bold(true)
+	badStatusStyle  = lipgloss.NewStyle().Foreground(lipgloss.Color("1")).Bold(true)
 )
 
 func (m model) View() string {
@@ -34,7 +36,11 @@ func (m model) View() string {
 	if m.state == resultsView {
 		s += "Crawl Results:\n\n"
 		for _, n := range m.result {
-			s += n.Url + " | " + n.Status + "\n"
+			if n.Status == "200 OK" {
+				s += n.Url + " | " + goodStatusStyle.Render(n.Status) + "\n"
+			} else {
+				s += n.Url + " | " + badStatusStyle.Render(n.Status) + "\n"
+			}
 		}
 		s += faint.Render("(q)uit")
 	}
