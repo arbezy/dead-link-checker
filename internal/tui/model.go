@@ -9,6 +9,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+// FIX: text inputs take inpyts on all screens when they should onlt take input during login screen
+// this should be simple enough to fix, just throw an if stmt around textinput handling
+
 const (
 	frontView uint = iota
 	loginView
@@ -21,13 +24,14 @@ type crawlResultMsg []crawling.CheckedLink
 type updateProgressBarMsg int
 
 type model struct {
-	state     uint
-	textinput textinput.Model
-	urllist   []string
-	listIndex int
-	progress  progress.Model
-	percent   float64
-	result    []crawling.CheckedLink
+	state      uint
+	inputs     []textinput.Model
+	focusIndex int
+	urllist    []string
+	listIndex  int
+	progress   progress.Model
+	percent    float64
+	result     []crawling.CheckedLink
 }
 
 func NewModel() model {
@@ -35,12 +39,15 @@ func NewModel() model {
 	if err != nil {
 		log.Fatal("Failure gettings urls")
 	}
-	return model{
-		state:     frontView,
-		textinput: textinput.New(),
-		urllist:   urllist,
-		progress:  progress.New(progress.WithScaledGradient("#FF7CCB", "#FDFF8C")),
+	m := model{
+		state:    frontView,
+		inputs:   make([]textinput.Model, 2),
+		urllist:  urllist,
+		progress: progress.New(progress.WithScaledGradient("#FF7CCB", "#FDFF8C")),
 	}
+	m.SetTextInputsStyles()
+
+	return m
 }
 
 func (m model) Init() tea.Cmd {
@@ -48,7 +55,7 @@ func (m model) Init() tea.Cmd {
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	m.textinput, _ = m.textinput.Update(msg)
+	cmd := m.updateInputs(msg)
 
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -68,7 +75,18 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.state = resultsView
 
 	}
-	return m, nil
+
+	return m, cmd
+}
+
+func (m *model) updateInputs(msg tea.Msg) tea.Cmd {
+	cmds := make([]tea.Cmd, len(m.inputs))
+
+	for i := range m.inputs {
+		m.inputs[i], cmds[i] = m.inputs[i].Update(msg)
+	}
+
+	return tea.Batch(cmds...)
 }
 
 func startCrawl(urls []string) tea.Cmd {
@@ -82,6 +100,7 @@ func updateProgressBar() tea.Msg {
 	return updateProgressBarMsg(0)
 }
 
+// TODO: this is starting to get a bit complicated -> could probs move the login logic out of this function
 func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 	switch m.state {
 	case frontView:
@@ -92,9 +111,36 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 			m.state = loginView
 		}
 	case loginView:
+		// TODO: this flow needs a bit of work: shld be able to move up and down, and should chagnge back button
 		switch key {
+		case "tab":
+			// jump from username to password
+			m.focusIndex++
+			if m.focusIndex > len(m.inputs) {
+				m.focusIndex = 0
+			} else if m.focusIndex < 0 {
+				m.focusIndex = len(m.inputs)
+			}
+
+			cmds := make([]tea.Cmd, len(m.inputs))
+			for i := 0; i < len(m.inputs); i++ {
+				for i == m.focusIndex {
+					// set focused state
+					cmds[i] = m.inputs[i].Focus()
+					continue
+				}
+				// remove focussed states from inputs
+				m.inputs[i].Blur()
+			}
+			return m, tea.Batch(cmds...)
+
+		// TODO: think about making so they need to press enter twice
 		case "enter":
 			// ask to confirm
+
+			// record input values
+			//username := m.inputs[0].Value()
+			//password := m.inputs[1].Value()
 
 			// move to crawl
 			m.state = crawlingView
