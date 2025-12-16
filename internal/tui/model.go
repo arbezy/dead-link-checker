@@ -21,14 +21,13 @@ type crawlResultMsg []crawling.CheckedLink
 type updateProgressBarMsg int
 
 type model struct {
-	state uint
-	// table     table.Model
+	state     uint
 	textinput textinput.Model
 	urllist   []string
-	// listIndex int
-	progress progress.Model
-	percent  float64
-	result   []crawling.CheckedLink
+	listIndex int
+	progress  progress.Model
+	percent   float64
+	result    []crawling.CheckedLink
 }
 
 func NewModel() model {
@@ -112,14 +111,15 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 		}
 	case resultsView:
 		switch key {
-		//		case "j":
-		//			if m.listIndex < len(m.results) {
-		//				m.listIndex++
-		//			}
-		//		case "k":
-		//			if m.listIndex > 0 {
-		//				m.listIndex--
-		//			}
+		case "j":
+			// showing 30 results at a time, so stop index going above len-30
+			if m.listIndex < len(m.result)-30 {
+				m.listIndex++
+			}
+		case "k":
+			if m.listIndex > 0 {
+				m.listIndex--
+			}
 		case "q":
 			return m, tea.Quit
 		}

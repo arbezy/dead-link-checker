@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"fmt"
+	"github.com/arbezy/dead-link-checker/internal/crawling"
 	"github.com/charmbracelet/lipgloss"
 )
 
@@ -34,15 +36,48 @@ func (m model) View() string {
 
 	if m.state == resultsView {
 		s += "Crawl Results:\n\n"
-		for _, n := range m.result {
+		// only show 30 results at a time
+		top, bottom := m.keepWithinBounds(m.listIndex, m.listIndex+30)
+
+		for i, n := range m.result[top:bottom] {
+			shortUrl := m.getShortUrl(n)
+			paddedIndex := fmt.Sprintf("%3d. ", m.listIndex+i)
 			if n.Status == "200 OK" {
-				s += n.Url + " | " + goodStatusStyle.Render(n.Status) + "\n"
+				s += paddedIndex + shortUrl + " | " + goodStatusStyle.Render(n.Status) + "\n"
 			} else {
-				s += n.Url + " | " + badStatusStyle.Render(n.Status) + "\n"
+				s += paddedIndex + shortUrl + " | " + badStatusStyle.Render(n.Status) + "\n"
 			}
 		}
-		s += faint.Render("(q)uit")
+		s += faint.Render("(q)uit | (j/k) to scroll up / down")
 	}
 
 	return s
+}
+
+func (m model) getShortUrl(res crawling.CheckedLink) string {
+	shortUrl := res.Url
+	if len(res.Url) > 100 {
+		shortUrl = res.Url[:100] + "..."
+	} else {
+		// pad to 100 (and leave room for elipsis)
+		for len(shortUrl) < 103 {
+			shortUrl += " "
+		}
+	}
+	return shortUrl
+}
+
+func (m model) keepWithinBounds(top, bottom int) (int, int) {
+	if top < 0 {
+		top = 0
+		bottom = 30
+	}
+	if bottom > len(m.result) {
+		top = len(m.result) - 30
+		if top < 0 {
+			top = 0
+		}
+		bottom = len(m.result)
+	}
+	return top, bottom
 }

@@ -22,6 +22,7 @@ func checkLink(url string) (CheckedLink, error) {
 	return CheckedLink{url, response.Status, 0.0}, nil
 }
 
+// TODO: check multiple links at once
 func CheckLinks(urls []string) []CheckedLink {
 	results := []CheckedLink{}
 	for _, url := range urls {
