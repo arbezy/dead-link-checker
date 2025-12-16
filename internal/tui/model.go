@@ -9,7 +9,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-// FIX: text inputs take inpyts on all screens when they should onlt take input during login screen
+// FIX: text inputs take inputs on all screens when they should onlt take input during login screen
 // this should be simple enough to fix, just throw an if stmt around textinput handling
 
 const (
@@ -139,8 +139,11 @@ func (m model) handleKeyInput(key string) (tea.Model, tea.Cmd) {
 			// ask to confirm
 
 			// record input values
-			//username := m.inputs[0].Value()
-			//password := m.inputs[1].Value()
+			username := m.inputs[0].Value()
+			password := m.inputs[1].Value()
+
+			// set proxy
+			crawling.SetProxy(username, password)
 
 			// move to crawl
 			m.state = crawlingView

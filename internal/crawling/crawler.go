@@ -3,6 +3,7 @@ package crawling
 import (
 	"log"
 	"net/http"
+	"os"
 )
 
 type CheckedLink struct {
@@ -33,4 +34,21 @@ func CheckLinks(urls []string) []CheckedLink {
 		LinksCrawled++
 	}
 	return results
+}
+
+func SetProxy(username string, password string) bool {
+	if len(username) == 0 || len(password) == 0 {
+		return false
+	}
+
+	proxyUrl := `http://` + username + `:` + password + `@PROXY:PORTNUMBER`
+
+	// NOTE: should I defer reverting env vars after crawl has finished?
+	// actually don't think I need to since setenv is only active for the current (NOT the parent) process
+	// this means after exiting the program, the environment variables should be reset automatically
+
+	os.Setenv("HTTP_PROXY", proxyUrl)
+	os.Setenv("HTTPS_PROXY", proxyUrl)
+
+	return false
 }
